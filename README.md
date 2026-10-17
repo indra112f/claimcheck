@@ -18,6 +18,7 @@ That last line is a real mistake our blog's AI writer made: PEP 814 lists those 
 2. **Retrieval.** Every source page linked in the draft (plus any `--source`) is fetched and split into passages. A small IDF-weighted lexical index picks the closest passages for each claim, with no embeddings and no vector DB.
 3. **Verdict.** The model sees one claim and those passages only, and answers `supported`, `contradicted` or `not_found`, copying the evidence sentence.
 4. **Quote check.** The evidence must appear **word for word** in the fetched source (after normalizing quotes, dashes and whitespace). If it doesn't, the verdict is thrown away and becomes `not_found`. The model can't invent its proof.
+5. **Number check.** For `supported`, every number in the draft's sentence (versions, limits, prices) must appear in the evidence or the text around it. This was added after a run accepted "you'll need LLVM 21" with a quote that never mentions 21.
 
 The report lists problems first. The exit code is `1` when anything needs a human, so it works as a CI or pre-publish gate.
 
