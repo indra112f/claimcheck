@@ -54,13 +54,14 @@ Three articles from [CoreMesh](https://coremesh.online), whose drafts are writte
 
 | Draft | Claims | Supported | Flagged | Time | Tokens in / out |
 |---|---|---|---|---|---|
-| Python 3.15 upgrade (with the frozendict mistake put back) | 32 | 26 | 6, incl. the planted mistake | 153 s | 77.8k / 4.0k |
-| Why Claude Code uses so many tokens | 29 | 24 | 5 | 159 s | 68.9k / 4.1k |
-| Claude Code usage limit reset (links only to docs home pages) | 9 | 0 | 9 | 44 s | 21.8k / 1.0k |
+| Python 3.15 upgrade (with the frozendict mistake put back) | 28 | 22 | 6, incl. the planted mistake | 303 s | 67.4k / 4.0k |
+| Why Claude Code uses so many tokens | 29 | 23 | 6 | 189 s | 69.1k / 4.1k |
+| Claude Code usage limit reset, its own links (docs home pages) | 12 | 0 | 12 | 59 s | 28.0k / 1.3k |
+| Same article, right sources via `--source` | 10 | 3 | 7, mostly first-hand measurements | 47 s | 22.0k / 1.2k |
 
-At DigitalOcean's listed Gemma 4 serverless rate ($0.18 per 1M input tokens and $0.50 per 1M output tokens, as of October 2026), the first two runs cost about **1.5 cents each**.
+At DigitalOcean's listed Gemma 4 serverless rate ($0.18 per 1M input tokens and $0.50 per 1M output tokens, as of October 2026), a full article costs about **1.4 cents**.
 
-The third row is a useful failure: that article links only to documentation **home pages**, so none of its claims could be backed by what it links to. The fix is better links, not a better model.
+The third row is a useful failure: that article links only to documentation **home pages**, so none of its claims could be backed by what it links to. The fix is better links, not a better model. Most flags left in the fourth row are the author's own measurements (build and review times), which no documentation can confirm.
 
 Full reports are in [`examples/`](examples/).
 
