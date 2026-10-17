@@ -78,7 +78,7 @@ def numbers(s: str) -> set[str]:
     return out
 
 
-def around(quote: str, text_norm: str, pad: int = 400) -> str:
+def around(quote: str, text_norm: str, pad: int = 1500) -> str:
     """The source text around a quote: the table row or heading a number lives in is usually
     a few hundred characters away from the sentence the model copied."""
     first = re.split(r"\.\.\.|…", norm(quote).strip(" .\"'"))[0].strip()
@@ -320,7 +320,8 @@ def verify(m: Model, claim: str, sources: dict, src_norm: dict, index: "Index | 
             # numbers in the draft text must appear in the evidence (or the page's own title/URL,
             # e.g. "3.15" on the 3.15 release notes); otherwise the quote doesn't prove the number
             near = numbers(url + " " + sources[url][:300]) | numbers(ev) | numbers(around(ev, src_norm[url]))
-            missing = [n for n in numbers(quote or claim) if n not in near]
+            stated = re.sub(r"\]\([^)]*\)|https?://\S+", "]", quote or claim)   # link targets aren't claims
+            missing = [n for n in numbers(stated) if n not in near]
             if missing:
                 return {"verdict": "not_found", "source": url, "evidence": ev, "quote_checked": False,
                         "note": f"model said supported, but its quote doesn't contain {', '.join(missing)}"}
