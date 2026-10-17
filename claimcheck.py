@@ -78,6 +78,14 @@ def numbers(s: str) -> set[str]:
     return out
 
 
+def around(quote: str, text_norm: str, pad: int = 400) -> str:
+    """The source text around a quote: the table row or heading a number lives in is usually
+    a few hundred characters away from the sentence the model copied."""
+    first = re.split(r"\.\.\.|…", norm(quote).strip(" .\"'"))[0].strip()
+    i = text_norm.find(first) if first else -1
+    return "" if i < 0 else text_norm[max(0, i - pad): i + len(first) + pad]
+
+
 def strip_code(md: str) -> str:
     """Drop fenced code blocks; claims live in prose (code is tested, not fact-checked)."""
     return re.sub(r"^```.*?^```[ \t]*$", "", md, flags=re.S | re.M)
@@ -311,8 +319,8 @@ def verify(m: Model, claim: str, sources: dict, src_norm: dict, index: "Index | 
         if v == "supported":
             # numbers in the draft text must appear in the evidence (or the page's own title/URL,
             # e.g. "3.15" on the 3.15 release notes); otherwise the quote doesn't prove the number
-            missing = [n for n in numbers(quote or claim)
-                       if n not in numbers(ev) and n not in numbers(url + " " + sources[url][:300])]
+            near = numbers(url + " " + sources[url][:300]) | numbers(ev) | numbers(around(ev, src_norm[url]))
+            missing = [n for n in numbers(quote or claim) if n not in near]
             if missing:
                 return {"verdict": "not_found", "source": url, "evidence": ev, "quote_checked": False,
                         "note": f"model said supported, but its quote doesn't contain {', '.join(missing)}"}

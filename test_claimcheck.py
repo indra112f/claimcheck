@@ -87,6 +87,14 @@ class Verify(unittest.TestCase):
         r = cc.verify(m, "JIT is 7-8% faster in 3.15", src, srcn, quote="a 7-8% geometric mean improvement in 3.15")
         self.assertEqual(r["verdict"], "supported")     # 3.15 comes from the page URL
 
+    def test_number_from_the_same_table_row_counts(self):
+        src = {"https://docs.example/pricing": "Model Claude Opus 5.5 Input $5 / MTok. Cache reads cost 0.1 times the base input price for every model."}
+        srcn = {u: cc.norm(t) for u, t in src.items()}
+        m = FakeModel([json.dumps({"verdict": "supported", "source": "S1",
+                                   "evidence": "Cache reads cost 0.1 times the base input price for every model."})])
+        r = cc.verify(m, "Opus 5.5 cache reads are 0.1x input", src, srcn, quote="Cache reads on Opus 5.5 cost 0.1 times the input rate")
+        self.assertEqual(r["verdict"], "supported")
+
     def test_numbers(self):
         self.assertEqual(cc.numbers("LLVM 21, 7-8% on x86-64, macOS 10.15, 1,000 rows, step 3"), {"21", "7-8", "64", "10.15", "1000"})
 
