@@ -73,6 +73,23 @@ class Verify(unittest.TestCase):
         r = cc.verify(m, "EnumType.__members__ now returns a frozendict", SRC, SRC_N)
         self.assertEqual(r["verdict"], "contradicted")
 
+    def test_supported_needs_the_numbers(self):
+        src = {"https://docs.example/3.15/whatsnew": "As always, LLVM is only needed when building CPython with the JIT enabled; "
+               "the JIT gives a 7-8% geometric mean improvement on x86-64 Linux."}
+        srcn = {u: cc.norm(t) for u, t in src.items()}
+        m = FakeModel([json.dumps({"verdict": "supported", "source": "S1",
+                                   "evidence": "As always, LLVM is only needed when building CPython with the JIT enabled;"})])
+        r = cc.verify(m, "Building the JIT requires LLVM 21", src, srcn, quote="you'll need LLVM 21 at build time")
+        self.assertEqual(r["verdict"], "not_found")
+        self.assertIn("21", r["note"])
+        m = FakeModel([json.dumps({"verdict": "supported", "source": "S1",
+                                   "evidence": "the JIT gives a 7-8% geometric mean improvement on x86-64 Linux."})])
+        r = cc.verify(m, "JIT is 7-8% faster in 3.15", src, srcn, quote="a 7-8% geometric mean improvement in 3.15")
+        self.assertEqual(r["verdict"], "supported")     # 3.15 comes from the page URL
+
+    def test_numbers(self):
+        self.assertEqual(cc.numbers("LLVM 21, 7-8% on x86-64, macOS 10.15, 1,000 rows, step 3"), {"21", "7-8", "64", "10.15", "1000"})
+
     def test_garbage_answer_is_not_found(self):
         r = cc.verify(FakeModel(["I think so"]), "Python 3.15 UTF-8 default", SRC, SRC_N)
         self.assertEqual(r["verdict"], "not_found")

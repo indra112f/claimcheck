@@ -67,6 +67,17 @@ def quote_in(quote: str, text_norm: str, min_len: int = 12) -> bool:
     return bool(parts) and all(len(p) >= 6 and p in text_norm for p in parts)
 
 
+def numbers(s: str) -> set[str]:
+    """Numbers that carry meaning in a claim: 21, 3.15, 7-8, 10.15, 0.18 (single digits 0-9 and
+    list numbering are ignored, they're too common to prove anything)."""
+    out = set()
+    for n in re.findall(r"(?<![\w.])\d+(?:[.,]\d+)*(?:-\d+)?(?![\w])", norm(s)):
+        n = n.replace(",", "")
+        if len(n) > 1:
+            out.add(n)
+    return out
+
+
 def strip_code(md: str) -> str:
     """Drop fenced code blocks; claims live in prose (code is tested, not fact-checked)."""
     return re.sub(r"^```.*?^```[ \t]*$", "", md, flags=re.S | re.M)
@@ -297,6 +308,14 @@ def verify(m: Model, claim: str, sources: dict, src_norm: dict, index: "Index | 
             return {"verdict": "not_found", "source": url, "evidence": ev,
                     "note": f"model said {v}, but its quote is not in the source (discarded)", "quote_checked": False}
         url = hit
+        if v == "supported":
+            # numbers in the draft text must appear in the evidence (or the page's own title/URL,
+            # e.g. "3.15" on the 3.15 release notes); otherwise the quote doesn't prove the number
+            missing = [n for n in numbers(quote or claim)
+                       if n not in numbers(ev) and n not in numbers(url + " " + sources[url][:300])]
+            if missing:
+                return {"verdict": "not_found", "source": url, "evidence": ev, "quote_checked": False,
+                        "note": f"model said supported, but its quote doesn't contain {', '.join(missing)}"}
     return {"verdict": v, "source": url, "evidence": ev, "note": note, "quote_checked": v != "not_found"}
 
 
