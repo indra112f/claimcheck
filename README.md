@@ -4,10 +4,10 @@ Fact-check an AI-written draft against **its own sources** with an open-weight m
 
 ```
 $ claimcheck examples/python315-draft.md --exclude coremesh.online
-32 claims, 4 sources
-  [1/32] supported    Python 3.15 uses UTF-8 as the default text encoding for files, stdio and pipes.
+28 claims, 4 sources
+  [1/28] supported    Python 3.15 uses UTF-8 as the default text encoding for files, stdio and pipes.
   ...
-  [22/32] not_found   EnumType.__members__ and errno.errorcode return frozendict in Python 3.15.
+  [18/28] not_found    In Python 3.15, `EnumType.__members__` and `errno.errorcode` return `frozendict`.
 ```
 
 That last line is a real mistake our blog's AI writer made: PEP 814 lists those two as *possible candidates*, not as shipped changes. claimcheck flagged it.
